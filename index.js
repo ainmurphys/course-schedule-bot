@@ -51,9 +51,14 @@ const databaseJadwal = {
 };
 
 // 3. Respon ketika Bos ketik /start
+// 3. Respon ketika Bos ketik /start
 bot.start((ctx) => {
   ctx.reply(
-    "Siap, Bos Plankton! Saya aktif. Ketik /jadwal untuk melihat kelas yang harus Bos hadapi HARI INI secara otomatis.",
+    "Siap, Bos Plankton! Sistem pengawal jadwal kuliah sudah aktif dan stand-by di laboratorium.\n\n" +
+      "Berikut adalah daftar perintah yang bisa Bos gunakan saat ini:\n" +
+      "1. /jadwal - Membaca hari sistem secara otomatis dan memunculkan matkul HARI INI.\n" +
+      "2. /esok - Mengintip daftar matkul untuk HARI ESOK demi persiapan mental dari sekarang.\n\n" +
+      "Gunakan dengan bijak demi kelancaran target kelulusan kita, Bos!",
   );
 });
 
