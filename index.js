@@ -1,10 +1,10 @@
 require("dotenv").config();
-const { Telegraf } = require("telegraf");
 
 // 1. Ambil token aman dari brankas .env
 const token = process.env.TELEGRAM_TOKEN
   ? process.env.TELEGRAM_TOKEN.trim()
   : undefined;
+const { Telegraf, Markup } = require("telegraf"); // <-- SEKARANG SUDAH DITAMBAH MARKUP
 const bot = new Telegraf(token);
 
 console.log(
@@ -50,15 +50,19 @@ const databaseJadwal = {
     "🛌 HARI MINGGU LIBUR! Istirahat total, Bos. siapkan energi untuk mengulang matkul besok pagi.",
 };
 
-// 3. Respon ketika Bos ketik /start
-// 3. Respon ketika Bos ketik /start
+// 3. Respon ketika Bos ketik /start (Sekarang dengan Keyboard Interaktif)
 bot.start((ctx) => {
   ctx.reply(
     "Siap, Bos Plankton! Sistem pengawal jadwal kuliah sudah aktif dan stand-by di laboratorium.\n\n" +
       "Berikut adalah daftar perintah yang bisa Bos gunakan saat ini:\n" +
       "1. /jadwal - Membaca hari sistem secara otomatis dan memunculkan matkul HARI INI.\n" +
       "2. /esok - Mengintip daftar matkul untuk HARI ESOK demi persiapan mental dari sekarang.\n\n" +
-      "Gunakan dengan bijak demi kelancaran target kelulusan kita, Bos!",
+      "Gunakan tombol di bawah ini untuk akses cepat tanpa mengetik, Bos!",
+
+    // Ini adalah cetak biru tombol interaktif kita
+    Markup.keyboard([
+      ["/jadwal", "/esok"], // Tombol berjejer ke samping dalam satu baris
+    ]).resize(), // Membuat ukuran tombol otomatis pas dengan layar HP/Laptop Bos
   );
 });
 
@@ -71,13 +75,6 @@ bot.command("jadwal", (ctx) => {
   const pesanJadwal = databaseJadwal[angkaHariIni]; // <-- SEKARANG SUDAH DIGABUNG JUGA
 
   // Kirimkan hasilnya ke Telegram
-  ctx.reply(pesanJadwal);
-});
-
-// 4. Respon ketika Bos ketik /jadwal (Logika Otomatisasi Hari)
-bot.command("jadwal", (ctx) => {
-  const angkaHariIni = new Date().getDay();
-  const pesanJadwal = databaseJadwal[angkaHariIni];
   ctx.reply(pesanJadwal);
 });
 
