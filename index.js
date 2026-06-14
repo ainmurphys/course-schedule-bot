@@ -1,18 +1,20 @@
 require("dotenv").config();
+const { Telegraf, Markup } = require("telegraf");
+const cron = require("node-cron"); // <-- 1. IMPORT NODE-CRON DI SINI
 
-// 1. Ambil token aman dari brankas .env
 const token = process.env.TELEGRAM_TOKEN
   ? process.env.TELEGRAM_TOKEN.trim()
   : undefined;
-const { Telegraf, Markup } = require("telegraf"); // <-- SEKARANG SUDAH DITAMBAH MARKUP
 const bot = new Telegraf(token);
+
+// Variabel global untuk menampung ID Telegram Bos Plankton
+let bossChatId = null; // <-- 2. WADAH CHAT ID
 
 console.log(
   "Sistem Aktif! Bot Pengawal Jadwal Kuliah (Secure Mode) berjalan...",
 );
 
-// 2. DATABASE JADWAL KULIAH BOS PLANKTON
-// Angka mewakili hari: 1 = Senin, 2 = Selasa, 3 = Rabu, 4 = Kamis, 5 = Jumat, 6 = Sabtu, 0 = Minggu
+// DATABASE JADWAL KULIAH BOS PLANKTON
 const databaseJadwal = {
   1:
     "📅 JADWAL KULIAH HARI SENIN:\n\n" +
@@ -50,8 +52,13 @@ const databaseJadwal = {
     "🛌 HARI MINGGU LIBUR! Istirahat total, Bos. siapkan energi untuk mengulang matkul besok pagi.",
 };
 
-// 3. Respon ketika Bos ketik /start (Sekarang dengan Keyboard Interaktif)
+// 3. Respon ketika Bos ketik /start
 bot.start((ctx) => {
+  // Amankan ID chat Bos ke dalam sistem variabel laboratorium
+  bossChatId = ctx.chat.id; // <-- 3. PROSES PENANGKAPAN CHAT ID
+
+  console.log("Sistem berhasil mengunci Chat ID Bos: " + bossChatId);
+
   ctx.reply(
     "Siap, Bos Plankton! Sistem pengawal jadwal kuliah sudah aktif dan stand-by di laboratorium.\n\n" +
       "Berikut adalah daftar perintah yang bisa Bos gunakan saat ini:\n" +
@@ -59,40 +66,54 @@ bot.start((ctx) => {
       "2. /esok - Mengintip daftar matkul untuk HARI ESOK demi persiapan mental dari sekarang.\n\n" +
       "Gunakan tombol di bawah ini untuk akses cepat tanpa mengetik, Bos!",
 
-    // Ini adalah cetak biru tombol interaktif kita
-    Markup.keyboard([
-      ["/jadwal", "/esok"], // Tombol berjejer ke samping dalam satu baris
-    ]).resize(), // Membuat ukuran tombol otomatis pas dengan layar HP/Laptop Bos
+    Markup.keyboard([["/jadwal", "/esok"]]).resize(),
   );
 });
 
-// 4. Respon ketika Bos ketik /jadwal (Logika Otomatisasi Hari)
+// 4. Respon ketika Bos ketik /jadwal
 bot.command("jadwal", (ctx) => {
-  // Mengambil angka hari saat ini berdasarkan jam sistem komputer Bos
-  const angkaHariIni = new Date().getDay(); // <-- SEKARANG SUDAH DIGABUNG (TANPA SPASI)
-
-  // Mengambil teks jadwal yang cocok dari database
-  const pesanJadwal = databaseJadwal[angkaHariIni]; // <-- SEKARANG SUDAH DIGABUNG JUGA
-
-  // Kirimkan hasilnya ke Telegram
+  const angkaHariIni = new Date().getDay();
+  const pesanJadwal = databaseJadwal[angkaHariIni];
   ctx.reply(pesanJadwal);
 });
 
-// === COPIED / PASTE KODE BARU DI BAWAH INI ===
-// 4b. Respon ketika Bos ketik /esok (Logika Mengintip Jadwal Besok)
+// 4b. Respon ketika Bos ketik /esok
 bot.command("esok", (ctx) => {
   const angkaHariIni = new Date().getDay();
-  // Rumus modulo 7 agar hari Sabtu (6) sukses melompat ke Minggu (0)
   const angkaHariEsok = (angkaHariIni + 1) % 7;
   const pesanJadwalEsok = databaseJadwal[angkaHariEsok];
-
-  // Tambahkan sedikit teks pengantar biar lebih informatif
   ctx.reply("Sistem mendeteksi jadwal untuk esok hari:\n\n" + pesanJadwalEsok);
 });
+
+// 4c. LOGIKA AUTO-REMINDER (Dijalankan setiap hari jam 07:00 pagi)
+// Format cron: menit jam hari-dari-bulan bulan hari-dari-minggu
+cron.schedule(
+  "0 7 * * *",
+  () => {
+    if (bossChatId) {
+      const angkaHariIni = new Date().getDay();
+      const pesanJadwal = databaseJadwal[angkaHariIni];
+
+      // Mengirim pesan langsung menggunakan bot instance tanpa trigger user
+      bot.telegram.sendMessage(
+        bossChatId,
+        "PEMBERITAHUAN OTOMATIS LABORATORIUM:\n\n" + pesanJadwal,
+      );
+      console.log("Laporan rutin jam 7 pagi sukses dikirim ke Bos Plankton.");
+    } else {
+      console.log(
+        "Reminder otomatis tertunda: Bos belum mengaktifkan bot lewat perintah /start pagi ini.",
+      );
+    }
+  },
+  {
+    scheduled: true,
+    timezone: "Asia/Jakarta", // Menyelaraskan waktu server lokal dengan zona waktu WIB/WITA/WIT
+  },
+);
 
 // 5. Menghidupkan mesin bot
 bot.launch();
 
-// Membuat bot mati dengan aman jika terminal ditutup
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
