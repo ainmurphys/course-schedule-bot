@@ -22,23 +22,23 @@ const databaseJadwal = {
 
   2:
     "📅 JADWAL KULIAH HARI SELASA:\n\n" +
-    "1. 07:00 - 09:30 | Elektronika Semester 4 (Semester Pendek/Kredit Bawah/Mengulang)\n" +
+    "1. 07:00 - 09:30 | Elektronika Semester 4 (Semester Pendek/Kredit Bawah/Mengulang)\n\n" +
     "Jangan sampai bolos, Bos! Ingat target lulus!",
 
   3:
     "📅 JADWAL KULIAH HARI RABU:\n\n" +
     "1. 08:40 - 10:20 | Sistem Operasi Semester 4 (Semester Pendek/Kredit Bawah/Mengulang)\n" +
-    "2. 09:30 - 11:10 | Technopreneurship Semester 4 (Semester Pendek/Kredit Bawah/Mengulang)\n" +
+    "2. 09:30 - 11:10 | Technopreneurship Semester 4 (Semester Pendek/Kredit Bawah/Mengulang)\n\n" +
     "Jangan sampai bolos, Bos! Ingat target lulus!",
 
   4:
     "📅 JADWAL KULIAH HARI KAMIS:\n\n" +
-    "1. 09:30 - 11:10 | Sistem Komputer Berkinerja Tinggi Semester 6 (Semester Pendek/Kredit Bawah/Mengulang)\n" +
+    "1. 09:30 - 11:10 | Sistem Komputer Berkinerja Tinggi Semester 6 (Semester Pendek/Kredit Bawah/Mengulang)\n\n" +
     "Belum ada matkul lain yang diinput untuk hari ini, Bos. Jangan keluyuran ke Krusty Krab!",
 
   5:
     "📅 JADWAL KULIAH HARI JUMAT:\n\n" +
-    "1. 09:30 - 11:10 | Teknologi IoT Semester 6 (Semester Pendek/Kredit Bawah/Mengulang)\n" +
+    "1. 09:30 - 11:10 | Teknologi IoT Semester 6 (Semester Pendek/Kredit Bawah/Mengulang)\n\n" +
     "Belum ada matkul lain yang diinput untuk hari ini, Bos. Persiapan menuju akhir pekan.",
 
   6:
