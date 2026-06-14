@@ -17,7 +17,7 @@ const databaseJadwal = {
   1:
     "📅 JADWAL KULIAH HARI SENIN:\n\n" +
     "1. 09:30 - 11:10 | Pengolahan Citra Semester 6 (Semester Pendek/Kredit Bawah/Mengulang)\n\n" +
-    "2. 10:20 - 12:00 | Konsep Perangkat Keras Semester 4 (Semester Pendek/Kredit Bawah/Mengulang)\n" +
+    "2. 10:20 - 12:00 | Konsep Perangkat Keras Semester 4 (Semester Pendek/Kredit Bawah/Mengulang)\n\n" +
     "Jangan sampai bolos, Bos! Ingat target lulus!",
 
   2:
