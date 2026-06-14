@@ -69,6 +69,25 @@ bot.command("jadwal", (ctx) => {
   ctx.reply(pesanJadwal);
 });
 
+// 4. Respon ketika Bos ketik /jadwal (Logika Otomatisasi Hari)
+bot.command("jadwal", (ctx) => {
+  const angkaHariIni = new Date().getDay();
+  const pesanJadwal = databaseJadwal[angkaHariIni];
+  ctx.reply(pesanJadwal);
+});
+
+// === COPIED / PASTE KODE BARU DI BAWAH INI ===
+// 4b. Respon ketika Bos ketik /esok (Logika Mengintip Jadwal Besok)
+bot.command("esok", (ctx) => {
+  const angkaHariIni = new Date().getDay();
+  // Rumus modulo 7 agar hari Sabtu (6) sukses melompat ke Minggu (0)
+  const angkaHariEsok = (angkaHariIni + 1) % 7;
+  const pesanJadwalEsok = databaseJadwal[angkaHariEsok];
+
+  // Tambahkan sedikit teks pengantar biar lebih informatif
+  ctx.reply("Sistem mendeteksi jadwal untuk esok hari:\n\n" + pesanJadwalEsok);
+});
+
 // 5. Menghidupkan mesin bot
 bot.launch();
 
