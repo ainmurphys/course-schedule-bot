@@ -47,7 +47,7 @@ const databaseJadwal = {
 
   0:
     "📅 JADWAL KULIAH HARI MINGGU:\n\n" +
-    "🛌 HARI MINGGU LIBUR! Istirahat total, siapkan energi untuk mengulang matkul besok pagi.",
+    "🛌 HARI MINGGU LIBUR! Istirahat total, Bos. siapkan energi untuk mengulang matkul besok pagi.",
 };
 
 // 3. Respon ketika Bos ketik /start
