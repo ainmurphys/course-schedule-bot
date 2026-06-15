@@ -52,6 +52,27 @@ const databaseJadwal = {
     "🛌 HARI MINGGU LIBUR! Istirahat total, Bos. siapkan energi untuk mengulang matkul besok pagi.",
 };
 
+// === COPIED / PASTE DATABASE DEADLINE DI BAWAH DATABASE JADWAL ===
+
+// DATABASE BATAS PENGUMPULAN TUGAS (DEADLINE TRACKER)
+const databaseDeadline = [
+  {
+    tugas: "Revisi Bab 4 Skripsi (Metodologi)",
+    tanggal: "20 Juni 2026",
+    sisa: "4 Hari lagi",
+  },
+  {
+    tugas: "Laporan Proyek Akhir Teknologi IoT",
+    tanggal: "25 Juni 2026",
+    sisa: "9 Hari lagi",
+  },
+  {
+    tugas: "Proposal Bisnis Technopreneurship",
+    tanggal: "02 Juli 2026",
+    sisa: "16 Hari lagi",
+  },
+];
+
 // 3. Respon ketika Bos ketik /start
 bot.start((ctx) => {
   // Amankan ID chat Bos ke dalam sistem variabel laboratorium
@@ -66,7 +87,11 @@ bot.start((ctx) => {
       "2. /esok - Mengintip daftar matkul untuk HARI ESOK demi persiapan mental dari sekarang.\n\n" +
       "Gunakan tombol di bawah ini untuk akses cepat tanpa mengetik, Bos!",
 
-    Markup.keyboard([["/jadwal", "/esok"]]).resize(),
+    // Update bagian Markup di dalam bot.start agar tombolnya jadi 2 baris rapi
+    Markup.keyboard([
+      ["/jadwal", "/esok"], // Baris pertama (Tombol Waktu)
+      ["/deadline"], // Baris kedua (Tombol Tugas)
+    ]).resize(),
   );
 });
 
@@ -95,6 +120,33 @@ bot.command("kamis", (ctx) => ctx.reply(databaseJadwal[4]));
 bot.command("jumat", (ctx) => ctx.reply(databaseJadwal[5]));
 bot.command("sabtu", (ctx) => ctx.reply(databaseJadwal[6]));
 bot.command("minggu", (ctx) => ctx.reply(databaseJadwal[0]));
+
+// === COPIED / PASTE PERINTAH /DEADLINE DI SINI ===
+
+// 4e. Respon ketika Bos ketik /deadline
+bot.command("deadline", (ctx) => {
+  // Jika database kosong, beri laporan aman
+  if (databaseDeadline.length === 0) {
+    return ctx.reply(
+      "🎉 Bersih, Bos! Tidak ada deadline tugas yang terdeteksi di dalam sistem saat ini.",
+    );
+  }
+
+  let pesanOtomatis = "⚠️ DOSEN PENGIKUT TUAN KRABS MULAI MENEROR! ⚠️\n";
+  pesanOtomatis += "Berikut daftar tugas yang harus segera Bos selesaikan:\n\n";
+
+  // Looping untuk menyusun daftar tugas agar rapi ke bawah
+  databaseDeadline.forEach((item, index) => {
+    pesanOtomatis += `${index + 1}. 📝 *${item.tugas}*\n`;
+    pesanOtomatis += `   📅 Batas: ${item.tanggal} (${item.sisa})\n\n`;
+  });
+
+  pesanOtomatis +=
+    "Jangan ditunda lagi Bos, demi formula rahasia kelulusan kita!";
+
+  // Mengirim pesan dengan mode Markdown agar teks tugas bisa tebal (bold)
+  ctx.replyWithMarkdown(pesanOtomatis);
+});
 
 // 4c. LOGIKA AUTO-REMINDER (Dijalankan setiap hari jam 07:00 pagi)
 // Format cron: menit jam hari-dari-bulan bulan hari-dari-minggu
