@@ -85,6 +85,17 @@ bot.command("esok", (ctx) => {
   ctx.reply("Sistem mendeteksi jadwal untuk esok hari:\n\n" + pesanJadwalEsok);
 });
 
+// === COPIED / PASTE KODE AKSES HARI SPESIFIK DI BAWAH INI ===
+
+// 4d. Respon Fitur Akses Jadwal Hari Spesifik secara Manual
+bot.command("senin", (ctx) => ctx.reply(databaseJadwal[1]));
+bot.command("selasa", (ctx) => ctx.reply(databaseJadwal[2]));
+bot.command("rabu", (ctx) => ctx.reply(databaseJadwal[3]));
+bot.command("kamis", (ctx) => ctx.reply(databaseJadwal[4]));
+bot.command("jumat", (ctx) => ctx.reply(databaseJadwal[5]));
+bot.command("sabtu", (ctx) => ctx.reply(databaseJadwal[6]));
+bot.command("minggu", (ctx) => ctx.reply(databaseJadwal[0]));
+
 // 4c. LOGIKA AUTO-REMINDER (Dijalankan setiap hari jam 07:00 pagi)
 // Format cron: menit jam hari-dari-bulan bulan hari-dari-minggu
 cron.schedule(
