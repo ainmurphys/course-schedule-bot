@@ -55,7 +55,8 @@ const databaseJadwal = {
 // === COPIED / PASTE DATABASE DEADLINE DI BAWAH DATABASE JADWAL ===
 
 // DATABASE BATAS PENGUMPULAN TUGAS (DEADLINE TRACKER)
-const databaseDeadline = [
+// DATABASE BATAS PENGUMPULAN TUGAS (Sekarang pakai 'let' agar bisa dimanipulasi)
+let databaseDeadline = [
   {
     tugas: "Revisi Bab 4 Skripsi (Metodologi)",
     tanggal: "20 Juni 2026",
@@ -146,6 +147,55 @@ bot.command("deadline", (ctx) => {
 
   // Mengirim pesan dengan mode Markdown agar teks tugas bisa tebal (bold)
   ctx.replyWithMarkdown(pesanOtomatis);
+});
+
+// === COPIED / PASTE LOGIKA DINAMIS DI BAWAH PERINTAH /DEADLINE ===
+
+// 4f. Perintah untuk menambah tugas baru secara instan
+// Format ketik: /tambah Nama Tugas Baru
+bot.command("tambah", (ctx) => {
+  // Mengambil teks setelah kata /tambah
+  const teksInput = ctx.message.text.split(" ").slice(1).join(" ");
+
+  if (!teksInput) {
+    return ctx.reply(
+      "⚠️ Format salah, Bos! Ketik: /tambah [nama tugas]\nContoh: /tambah Revisi Bab 5",
+    );
+  }
+
+  // Masukkan tugas baru ke dalam database internal
+  databaseDeadline.push({
+    tugas: teksInput,
+    tanggal: "Belum diset",
+    sisa: "Segera",
+  });
+
+  ctx.reply(
+    `✅ Berhasil dimasukkan ke radar laboratorium, Bos Plankton!\nTugas: "*${teksInput}*" telah ditambahkan.`,
+  );
+});
+
+// 4g. Perintah untuk menghapus tugas yang sudah selesai
+// Format ketik: /kelar NomorUrutTugas
+bot.command("kelar", (ctx) => {
+  const nomorTugas = parseInt(ctx.message.text.split(" ")[1]);
+
+  if (
+    isNaN(nomorTugas) ||
+    nomorTugas < 1 ||
+    nomorTugas > databaseDeadline.length
+  ) {
+    return ctx.reply(
+      "⚠️ Masukkan nomor urut tugas yang valid, Bos!\nContoh: /kelar 1",
+    );
+  }
+
+  // Hapus tugas dari array berdasarkan indeks (nomorUrut - 1)
+  const tugasDihapus = databaseDeadline.splice(nomorTugas - 1, 1);
+
+  ctx.reply(
+    `🎉 Mwahahaha! Tugas "*${tugasDihapus[0].tugas}*" resmi dihancurkan! Selangkah lebih dekat menuju kelulusan, Bos!`,
+  );
 });
 
 // 4c. LOGIKA AUTO-REMINDER (Dijalankan setiap hari jam 07:00 pagi)
