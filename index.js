@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { Telegraf, Markup } = require("telegraf");
-const cron = require("node-cron"); // <-- 1. IMPORT NODE-CRON DI SINI
+const cron = require("node-cron");
 
 const token = process.env.TELEGRAM_TOKEN
   ? process.env.TELEGRAM_TOKEN.trim()
@@ -8,7 +8,7 @@ const token = process.env.TELEGRAM_TOKEN
 const bot = new Telegraf(token);
 
 // Variabel global untuk menampung ID Telegram Bos Plankton
-let bossChatId = null; // <-- 2. WADAH CHAT ID
+let bossChatId = null;
 
 console.log(
   "Sistem Aktif! Bot Pengawal Jadwal Kuliah (Secure Mode) berjalan...",
@@ -52,10 +52,7 @@ const databaseJadwal = {
     "🛌 HARI MINGGU LIBUR! Istirahat total, Bos. siapkan energi untuk mengulang matkul besok pagi.",
 };
 
-// === COPIED / PASTE DATABASE DEADLINE DI BAWAH DATABASE JADWAL ===
-
 // DATABASE BATAS PENGUMPULAN TUGAS (DEADLINE TRACKER)
-// DATABASE BATAS PENGUMPULAN TUGAS (Sekarang pakai 'let' agar bisa dimanipulasi)
 let databaseDeadline = [
   {
     tugas: "Revisi Bab 4 Skripsi (Metodologi)",
@@ -74,21 +71,18 @@ let databaseDeadline = [
   },
 ];
 
-// 3. Respon ketika Bos ketik /start
+// 1. Respon ketika Bos ketik /start
 bot.start((ctx) => {
-  // Amankan ID chat Bos ke dalam sistem variabel laboratorium
-  bossChatId = ctx.chat.id; // <-- 3. PROSES PENANGKAPAN CHAT ID
-
+  bossChatId = ctx.chat.id;
   console.log("Sistem berhasil mengunci Chat ID Bos: " + bossChatId);
 
   ctx.reply(
-    "Siap, Bos Plankton! Sistem pengawal jadwal kuliah sudah aktif dan stand-by di laboratorium.\n\n" +
+    "Siap, Bos Plankton! Sistem pengawal jadwal kuliah sudah aktif and stand-by di laboratorium.\n\n" +
       "Berikut adalah daftar perintah yang bisa Bos gunakan saat ini:\n" +
       "1. /jadwal - Membaca hari sistem secara otomatis dan memunculkan matkul HARI INI.\n" +
       "2. /esok - Mengintip daftar matkul untuk HARI ESOK demi persiapan mental dari sekarang.\n\n" +
       "Gunakan tombol di bawah ini untuk akses cepat tanpa mengetik, Bos!",
 
-    // Update bagian Markup di dalam bot.start agar tombolnya jadi 2 baris rapi
     Markup.keyboard([
       ["/jadwal", "/esok"], // Baris pertama (Tombol Waktu)
       ["/deadline"], // Baris kedua (Tombol Tugas)
@@ -96,14 +90,14 @@ bot.start((ctx) => {
   );
 });
 
-// 4. Respon ketika Bos ketik /jadwal
+// 2. Respon ketika Bos ketik /jadwal
 bot.command("jadwal", (ctx) => {
   const angkaHariIni = new Date().getDay();
   const pesanJadwal = databaseJadwal[angkaHariIni];
   ctx.reply(pesanJadwal);
 });
 
-// 4b. Respon ketika Bos ketik /esok
+// 3. Respon ketika Bos ketik /esok
 bot.command("esok", (ctx) => {
   const angkaHariIni = new Date().getDay();
   const angkaHariEsok = (angkaHariIni + 1) % 7;
@@ -111,9 +105,7 @@ bot.command("esok", (ctx) => {
   ctx.reply("Sistem mendeteksi jadwal untuk esok hari:\n\n" + pesanJadwalEsok);
 });
 
-// === COPIED / PASTE KODE AKSES HARI SPESIFIK DI BAWAH INI ===
-
-// 4d. Respon Fitur Akses Jadwal Hari Spesifik secara Manual
+// 4. Respon Fitur Akses Jadwal Hari Spesifik secara Manual
 bot.command("senin", (ctx) => ctx.reply(databaseJadwal[1]));
 bot.command("selasa", (ctx) => ctx.reply(databaseJadwal[2]));
 bot.command("rabu", (ctx) => ctx.reply(databaseJadwal[3]));
@@ -122,11 +114,8 @@ bot.command("jumat", (ctx) => ctx.reply(databaseJadwal[5]));
 bot.command("sabtu", (ctx) => ctx.reply(databaseJadwal[6]));
 bot.command("minggu", (ctx) => ctx.reply(databaseJadwal[0]));
 
-// === COPIED / PASTE PERINTAH /DEADLINE DI SINI ===
-
-// 4e. Respon ketika Bos ketik /deadline
+// 5. Respon ketika Bos ketik /deadline
 bot.command("deadline", (ctx) => {
-  // Jika database kosong, beri laporan aman
   if (databaseDeadline.length === 0) {
     return ctx.reply(
       "🎉 Bersih, Bos! Tidak ada deadline tugas yang terdeteksi di dalam sistem saat ini.",
@@ -136,7 +125,6 @@ bot.command("deadline", (ctx) => {
   let pesanOtomatis = "⚠️ DOSEN PENGIKUT TUAN KRABS MULAI MENEROR! ⚠️\n";
   pesanOtomatis += "Berikut daftar tugas yang harus segera Bos selesaikan:\n\n";
 
-  // Looping untuk menyusun daftar tugas agar rapi ke bawah
   databaseDeadline.forEach((item, index) => {
     pesanOtomatis += `${index + 1}. 📝 *${item.tugas}*\n`;
     pesanOtomatis += `   📅 Batas: ${item.tanggal} (${item.sisa})\n\n`;
@@ -144,17 +132,11 @@ bot.command("deadline", (ctx) => {
 
   pesanOtomatis +=
     "Jangan ditunda lagi Bos, demi formula rahasia kelulusan kita!";
-
-  // Mengirim pesan dengan mode Markdown agar teks tugas bisa tebal (bold)
   ctx.replyWithMarkdown(pesanOtomatis);
 });
 
-// === COPIED / PASTE LOGIKA DINAMIS DI BAWAH PERINTAH /DEADLINE ===
-
-// 4f. Perintah untuk menambah tugas baru secara instan
-// Format ketik: /tambah Nama Tugas Baru
+// 6. Perintah untuk menambah tugas baru secara instan
 bot.command("tambah", (ctx) => {
-  // Mengambil teks setelah kata /tambah
   const teksInput = ctx.message.text.split(" ").slice(1).join(" ");
 
   if (!teksInput) {
@@ -163,7 +145,6 @@ bot.command("tambah", (ctx) => {
     );
   }
 
-  // Masukkan tugas baru ke dalam database internal
   databaseDeadline.push({
     tugas: teksInput,
     tanggal: "Belum diset",
@@ -175,8 +156,7 @@ bot.command("tambah", (ctx) => {
   );
 });
 
-// 4g. Perintah untuk menghapus tugas yang sudah selesai
-// Format ketik: /kelar NomorUrutTugas
+// 7. Perintah untuk menghapus tugas yang sudah selesai
 bot.command("kelar", (ctx) => {
   const nomorTugas = parseInt(ctx.message.text.split(" ")[1]);
 
@@ -190,7 +170,6 @@ bot.command("kelar", (ctx) => {
     );
   }
 
-  // Hapus tugas dari array berdasarkan indeks (nomorUrut - 1)
   const tugasDihapus = databaseDeadline.splice(nomorTugas - 1, 1);
 
   ctx.reply(
@@ -198,8 +177,7 @@ bot.command("kelar", (ctx) => {
   );
 });
 
-// 4c. LOGIKA AUTO-REMINDER (Dijalankan setiap hari jam 07:00 pagi)
-// Format cron: menit jam hari-dari-bulan bulan hari-dari-minggu
+// 8. LOGIKA AUTO-REMINDER (Dijalankan setiap hari jam 07:00 pagi)
 cron.schedule(
   "0 7 * * *",
   () => {
@@ -207,7 +185,6 @@ cron.schedule(
       const angkaHariIni = new Date().getDay();
       const pesanJadwal = databaseJadwal[angkaHariIni];
 
-      // Mengirim pesan langsung menggunakan bot instance tanpa trigger user
       bot.telegram.sendMessage(
         bossChatId,
         "PEMBERITAHUAN OTOMATIS LABORATORIUM:\n\n" + pesanJadwal,
@@ -221,11 +198,11 @@ cron.schedule(
   },
   {
     scheduled: true,
-    timezone: "Asia/Jakarta", // Menyelaraskan waktu server lokal dengan zona waktu WIB/WITA/WIT
+    timezone: "Asia/Jakarta",
   },
 );
 
-// 5. Menghidupkan mesin bot
+// 9. Menghidupkan mesin bot
 bot.launch();
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
