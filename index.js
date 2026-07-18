@@ -1,6 +1,26 @@
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "1.1.1.1"]); // Memaksa Node.js memakai DNS Google & Cloudflare
+
 require("dotenv").config();
 const { Telegraf, Markup } = require("telegraf");
 const cron = require("node-cron");
+// Import & setup MongoDB
+const { MongoClient } = require("mongodb");
+
+const uri = process.env.MONGO_URI;
+const client = new MongoClient(uri);
+
+async function hubungkanDatabase() {
+  try {
+    await client.connect();
+    console.log(
+      "Formula Rahasia Aman! Sukses Terkoneksi ke ChumBucket-DB 🪙✨",
+    );
+  } catch (error) {
+    console.error("Waduh Bos, Gagal Konek ke Database:", error);
+  }
+}
+hubungkanDatabase();
 
 const token = process.env.TELEGRAM_TOKEN
   ? process.env.TELEGRAM_TOKEN.trim()
