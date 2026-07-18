@@ -222,6 +222,200 @@ cron.schedule(
   },
 );
 
+// =============================================================
+// VERSI NATIVE: PERINTAH TAMBAH JADWAL LANGSUNG PAKE MONGO_CLIENT
+// =============================================================
+bot.command("tambahjadwal", async (ctx) => {
+  const pesanRaw = ctx.message.text.replace("/tambahjadwal", "").trim();
+
+  if (!pesanRaw) {
+    return ctx.reply(
+      "❌ Format salah, Bos! Contoh penggunaan:\n\n/tambahjadwal Senin | 08:00 | Struktur Data | Lab Komputer 3",
+    );
+  }
+
+  // 🎯 UPGRADE ANTI-GESER: Ditambahkan .filter(Boolean) untuk buang potongan kosong akibat salah taruh pipa
+  const bagian = pesanRaw
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (bagian.length < 3) {
+    return ctx.reply(
+      "❌ Data kurang lengkap! Pastikan ada pemisah (|) untuk Hari, Jam, dan Matkul.",
+    );
+  }
+
+  const [hari, jam, matkul, ruangan] = bagian;
+
+  try {
+    const db = client.db();
+    const collection = db.collection("jadwals");
+
+    await collection.insertOne({
+      hari: hari,
+      jam: jam,
+      matkul: matkul,
+      ruangan: ruangan || "Tidak Ada / Online",
+      chatId: ctx.chat.id.toString(),
+    });
+
+    ctx.reply(
+      `✅ Formula Jadwal Berhasil Disimpan di Cloud!\n\n📅 Hari: ${hari}\n⏰ Jam: ${jam}\n📚 Matkul: ${matkul}\n🏛️ Ruangan: ${ruangan || "-"}`,
+    );
+  } catch (error) {
+    console.error("Gagal simpan ke database:", error);
+    ctx.reply("❌ Waduh Bos, gagal nge-save ke MongoDB Atlas.");
+  }
+});
+
+// =============================================================
+// FITUR BARU: MELIHAT SEMUA DATA JADWAL LANGSUNG DARI MONGODB
+// =============================================================
+bot.command("semuajadwal", async (ctx) => {
+  try {
+    const db = client.db();
+    const collection = db.collection("jadwals");
+
+    // 🎯 Mencari semua dokumen di database yang chatId-nya cocok dengan ID Bos
+    const listJadwal = await collection
+      .find({ chatId: ctx.chat.id.toString() })
+      .toArray();
+
+    // Validasi kalau di database ternyata masih kosong melompong
+    if (listJadwal.length === 0) {
+      return ctx.reply(
+        "📭 Peringatan Laboratorium: Belum ada jadwal kuliah yang disimpan di MongoDB, Bos! Gunakan perintah /tambahjadwal dulu.",
+      );
+    }
+
+    let pesanOtomatis = "📋 *DAFTAR MASTER JADWAL KULIAH DI CLOUD* 📋\n";
+    pesanOtomatis += "Berhasil ditarik langsung dari MongoDB Atlas:\n\n";
+
+    // Looping untuk menyusun data dari database jadi teks rapi
+    listJadwal.forEach((item, index) => {
+      pesanOtomatis += `${index + 1}. 📅 *${item.hari}* (${item.jam})\n`;
+      pesanOtomatis += `   📚 Matkul: ${item.matkul}\n`;
+      pesanOtomatis += `   🏛️ Ruangan: ${item.ruangan}\n\n`;
+    });
+
+    pesanOtomatis +=
+      "Formula rahasia aman tersimpan. Tetap semangat mengulang matkul, Bos!";
+
+    // Mengirimkan kumpulan data ke Telegram dengan format Markdown biar tebal-tipisnya rapi
+    ctx.replyWithMarkdown(pesanOtomatis);
+  } catch (error) {
+    console.error("Gagal mengambil data dari database:", error);
+    ctx.reply(
+      "❌ Waduh Bos, gagal menarik data dari MongoDB Atlas. Cek log terminal!",
+    );
+  }
+});
+
+// =============================================================
+// FITUR BARU: MENGHAPUS JADWAL TERTENTU DARI MONGODB
+// =============================================================
+bot.command("hapusjadwal", async (ctx) => {
+  // Mengambil nama matkul yang mau dihapus setelah kata /hapusjadwal
+  const matkulTarget = ctx.message.text.replace("/hapusjadwal", "").trim();
+
+  if (!matkulTarget) {
+    return ctx.reply(
+      "⚠️ Tentukan nama matkul yang mau dihapus, Bos!\n\nContoh untuk hapus data eror nomor 1:\n/hapusjadwal 09.30",
+    );
+  }
+
+  try {
+    const db = client.db();
+    const collection = db.collection("jadwals");
+
+    // 🎯 Perintah mendelete 1 dokumen yang cocok dengan chatId dan nama matkulnya
+    const hasil = await collection.deleteOne({
+      chatId: ctx.chat.id.toString(),
+      matkul: matkulTarget,
+    });
+
+    // Validasi kalau ternyata nama matkulnya gak ketemu
+    if (hasil.deletedCount === 0) {
+      return ctx.reply(
+        `❌ Gagal, Bos! Matkul "${matkulTarget}" tidak ditemukan di database. Pastikan ketikannya sama persis.`,
+      );
+    }
+
+    ctx.reply(
+      `🗑️ Sukses! Formula jadwal matkul "${matkulTarget}" resmi dimusnahkan dari cloud!`,
+    );
+  } catch (error) {
+    console.error("Gagal menghapus data:", error);
+    ctx.reply("❌ Waduh Bos, gagal menghapus data dari MongoDB Atlas.");
+  }
+});
+
+// =============================================================
+// FITUR BARU: MENGUBAH / UPDATE JADWAL DI MONGO_DB (SI HURUF 'U')
+// =============================================================
+bot.command("editjadwal", async (ctx) => {
+  const pesanRaw = ctx.message.text.replace("/editjadwal", "").trim();
+
+  if (!pesanRaw) {
+    return ctx.reply(
+      "❌ Format salah, Bos! Contoh penggunaan:\n\n/editjadwal [Matkul Lama] | [Hari Baru] | [Jam Baru] | [Matkul Baru] | [Ruangan Baru]",
+    );
+  }
+
+  // Memotong input berdasarkan pipa
+  const bagian = pesanRaw
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  // Validasi minimal harus ada 4 parameter (Matkul Lama, Hari Baru, Jam Baru, Matkul Baru)
+  if (bagian.length < 4) {
+    return ctx.reply(
+      "❌ Parameter kurang! Format wajib:\n/editjadwal Matkul Lama | Hari Baru | Jam Baru | Matkul Baru | Ruangan Baru (Opsional)",
+    );
+  }
+
+  const [matkulLama, hariBaru, jamBaru, matkulBaru, ruanganBaru] = bagian;
+
+  try {
+    const db = client.db();
+    const collection = db.collection("jadwals");
+
+    // 🎯 Menggunakan method updateOne dengan operator $set untuk mengubah data di cloud
+    const hasil = await collection.updateOne(
+      {
+        chatId: ctx.chat.id.toString(),
+        matkul: matkulLama,
+      },
+      {
+        $set: {
+          hari: hariBaru,
+          jam: jamBaru,
+          matkul: matkulBaru,
+          ruangan: ruanganBaru || "Tidak Ada / Online",
+        },
+      },
+    );
+
+    // Validasi kalau matkul lama yang mau diedit ternyata gak terdaftar
+    if (hasil.matchedCount === 0) {
+      return ctx.reply(
+        `❌ Gagal edit, Bos! Matkul lama "${matkulLama}" tidak ditemukan di database.`,
+      );
+    }
+
+    ctx.reply(
+      `✨ Mwahahaha! Formula Berhasil Di-update di Cloud!\n\n` +
+        `📝 *Sebelumnya:* ${matkulLama}\n` +
+        `🚀 *Sekarang:* ${matkulBaru} (${hariBaru} | ${jamBaru} | ${ruanganBaru || "-"})`,
+    );
+  } catch (error) {
+    console.error("Gagal update data:", error);
+    ctx.reply("❌ Waduh Bos, gagal memperbarui data di MongoDB Atlas.");
+  }
+});
+
 // 9. Menghidupkan mesin bot
 bot.launch();
 
